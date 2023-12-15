@@ -7,8 +7,7 @@ bp = Blueprint('home', __name__)
 # Define the route and function
 @bp.route('/')
 def hello():
-    # supabase = connect_to_supabase()
-    # res = supabase.table('users').select('*').execute()
+    supabase = connect_to_supabase()
+    res = supabase.table('users').select('*').execute()
 
-    # return jsonify({'data': res.data}), 200
-    return "Hello"
+    return jsonify({'data': res.data}), 200
