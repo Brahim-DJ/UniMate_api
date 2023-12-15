@@ -13,6 +13,7 @@ def signup():
     password = data.get('password')
     confirmPassword = data.get('confirmPassword')
     name = data.get('name')
+    error = False
     
     if (not email) or (len(email)<5):
         error='Email needs to be valid'
@@ -32,8 +33,6 @@ def signup():
         error_message = res['error']['message']
         return jsonify({'message': f'Signup failed! Error: {error_message}'}), 400
     else:
-
-        # Get the user ID and email from the Supabase auth response
         user_info = res.user
         if user_info:
             user_id = user_info.id
