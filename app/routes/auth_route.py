@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 import re
 from app.utils.database import connect_to_supabase
+from app.utils.uploadfiles import upload_avatar_to_supabase
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -8,11 +9,12 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/signup', methods=['POST'])
 def signup():
     supabase = connect_to_supabase()
-    data = request.json
+    data = request.form
     email = data.get('email')
     password = data.get('password')
     confirmPassword = data.get('confirmPassword')
     name = data.get('name')
+    avatar = request.files.get('avatar')
     errors = []
 
     # Validation functions
@@ -52,14 +54,23 @@ def signup():
         if user_info:
             user_id = user_info.id
             user_email = user_info.email
-
-            # Insert user into the database
-            response = supabase.table('users').insert({'id': user_id, 'email': user_email, 'name': name}).execute()
+            
+            supabase.storage.from_("avatars").upload(
+                file=avatar.read(),
+                path=f'avatars/{user_id}/avatar',  # Adjust the path as needed
+                file_options={"content-type": avatar.content_type}
+            )
+            
+            url = supabase.storage.from_('avatars').get_public_url(f'avatars/{user_id}/avatar')
+            
+            user_data = {'id': user_id, 'email': email, 'name': name, 'avatar_url': url}
+            supabase.table('users').insert(user_data).execute()
 
             return jsonify({
                 'id': user_id,
                 'email': user_email,
-                'name': name
+                'name': name,
+                'avatarUrl': url
             }), 200
         else:
             return jsonify({'message': 'Signup failed! User information not found'}), 400
