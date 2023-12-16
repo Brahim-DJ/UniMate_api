@@ -29,19 +29,16 @@ def signup():
     if isinstance(res, Exception):
         return jsonify({'message': f'Signup failed! Error: {res}'}), 400
 
-    if 'error' in res and res['error'] is not None:
-        error_message = res['error']['message']
-        return jsonify({'message': f'Signup failed! Error: {error_message}'}), 400
     else:
         user_info = res.user
         if user_info:
             user_id = user_info.id
             user_email = user_info.email
 
-            response = supabase.table('users').insert({'auth_id': user_id, 'email': user_email, 'name': name}).execute()
+            response = supabase.table('users').insert({'id': user_id, 'email': user_email, 'name': name}).execute()
 
             return jsonify({
-                'message': f'Signup successful! User ID: {user_id}, Email: {user_email}'
+                'id': user_id, 'email': user_email, 'name': name
             }), 200
         else:
             return jsonify({'message': 'Signup failed! User information not found'}), 400
@@ -50,32 +47,24 @@ def signup():
         
 @auth_bp.route('/signin', methods=['POST'])
 def signin():
-    # Extract data from the request
-    data = request.json  # Assuming the request contains JSON data with 'email' and 'password'
-
-    # Connect to Supabase
     supabase = connect_to_supabase()
+    data = request.json
 
-    # Attempt to sign in the user using Supabase auth
     res = supabase.auth.sign_in_with_password({'email': data.get('email'), 'password': data.get('password')})
 
-    # Check the response from Supabase auth
     if isinstance(res, Exception):
         return jsonify({'message': f'Sign-in failed! Error: {res}'}), 400
 
-    if 'error' in res and res['error'] is not None:
-        error_message = res['error']['message']
-        return jsonify({'message': f'Sign-in failed! Error: {error_message}'}), 400
     else:
-        # Extract user information from the sign-in response
         user_info = res.user
 
         if user_info:
             user_id = user_info.id # Access the 'id' attribute from 'user_info'
             user_email = user_info.email  # Access the 'email' attribute from 'user_info'
+            response = supabase.table('users').select('name').eq('id', user_id).execute()
 
             return jsonify({
-                'message': f'Sign-in successful! User ID: {user_id}, Email: {user_email}'
+                'id': user_id, 'email': user_email, 'name': response.name
             }), 200
         else:
             return jsonify({'message': 'Sign-in failed! User information not found'}), 400
