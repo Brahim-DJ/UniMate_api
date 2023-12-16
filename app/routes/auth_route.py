@@ -77,7 +77,7 @@ def signin():
     try:
         res = supabase.auth.sign_in_with_password({'email': data.get('email'), 'password': data.get('password')})
     except Exception as ex:
-        return jsonify({'errors': ex.args}), 500
+        return jsonify({'errors': ex.args}), 400
 
     else:
         user_info = res.user
