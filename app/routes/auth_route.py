@@ -1,7 +1,12 @@
 from flask import Blueprint, request, jsonify
+import re
 from app.utils.database import connect_to_supabase
 
 auth_bp = Blueprint('auth', __name__)
+
+def is_valid_email(email):
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(pattern, email) is not None
 
 # Function to handle user signup
 @auth_bp.route('/signup', methods=['POST'])
@@ -15,9 +20,9 @@ def signup():
     name = data.get('name')
     error = False
     
-    if (not email) or (len(email)<5):
+    if (not email) or (is_valid_email(email)):
         error='Email needs to be valid'
-    if (not error) and ( (not password) or (len(password)<8) ):
+    if (not error) and ( (not password) or (len(password)<8) or (password != confirmPassword)):
         error='Provide a password'        
     if (not error):    
         response = supabase.table('users').select("*").ilike('email', email).execute()
