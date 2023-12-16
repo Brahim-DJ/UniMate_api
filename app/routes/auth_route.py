@@ -20,7 +20,7 @@ def signup():
     if (not error) and ( (not password) or (len(password)<8) ):
         error='Provide a password'        
     if (not error):    
-        response = supabase.table('users').select("*").ilike('email', email).execute()
+        response = supabase.table('auth.users').select("*").ilike('email', email).execute()
         if len(response.data)>0:
             error='User already exists'
     if (not error):
