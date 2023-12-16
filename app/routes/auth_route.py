@@ -83,12 +83,11 @@ def signin():
         user_info = res.user
 
         if user_info:
-            user_id = user_info.id # Access the 'id' attribute from 'user_info'
-            user_email = user_info.email  # Access the 'email' attribute from 'user_info'
+            user_id = user_info.id
+            user_email = user_info.email 
             response = supabase.table('users').select('name').eq('id', user_id).execute()
-
             return jsonify({
-                'id': user_id, 'email': user_email, 'name': response.name
+                'id': user_id, 'email': user_email, 'name': response.data[0]['name']
             }), 200
         else:
             return jsonify({'message': 'Sign-in failed! User information not found'}), 400
