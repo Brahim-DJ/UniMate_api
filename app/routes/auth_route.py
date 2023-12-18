@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify
 import re
 from app.utils.database import connect_to_supabase
-from app.utils.uploadfiles import upload_avatar_to_supabase
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -58,7 +57,7 @@ def signup():
             supabase.storage.from_("avatars").upload(
                 file=avatar.read(),
                 path=f'avatars/{user_id}/avatar',  # Adjust the path as needed
-                file_options={"content-type": avatar.content_type}
+                file_options={"content-type": avatar.mimetype}
             )
             
             url = supabase.storage.from_('avatars').get_public_url(f'avatars/{user_id}/avatar')
