@@ -8,7 +8,9 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/signup', methods=['POST'])
 def signup():
     supabase = connect_to_supabase()
+
     data = request.form
+    
     email = data.get('email')
     password = data.get('password')
     confirmPassword = data.get('confirmPassword')
@@ -53,14 +55,16 @@ def signup():
         if user_info:
             user_id = user_info.id
             user_email = user_info.email
+            url = None
             
-            supabase.storage.from_("avatars").upload(
-                file=avatar.read(),
-                path=f'avatars/{user_id}/avatar',  # Adjust the path as needed
-                file_options={"content-type": avatar.mimetype}
-            )
+            if avatar:
+                supabase.storage.from_("avatars").upload(
+                    file=avatar.read(),
+                    path=f'avatars/{user_id}/avatar',  # Adjust the path as needed
+                    file_options={"content-type": avatar.mimetype}
+                )
             
-            url = supabase.storage.from_('avatars').get_public_url(f'avatars/{user_id}/avatar')
+                url = supabase.storage.from_('avatars').get_public_url(f'avatars/{user_id}/avatar')
             
             user_data = {'id': user_id, 'email': email, 'name': name, 'avatar_url': url}
             supabase.table('users').insert(user_data).execute()
