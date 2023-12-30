@@ -106,3 +106,17 @@ def signin():
             }), 200
         else:
             return jsonify({'message': 'Sign-in failed! User information not found'}), 400
+        
+@auth_bp.route('/getUserById', methods=['POST'])
+def getUserById():
+    supabase = connect_to_supabase()
+    data = request.json
+    userId = data.get('userId')
+
+    try:
+        response = supabase.table('users').select('name', 'avatar_url').eq('id', userId).execute()
+        return jsonify({
+                'name': response.data['name'], 'avatarUrl': response.data['avatar_url']
+            }), 200
+    except Exception as ex:
+        return jsonify({'message': 'getting user failed','errors': ex.args}), 400
