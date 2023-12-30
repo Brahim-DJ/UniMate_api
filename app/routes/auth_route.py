@@ -116,7 +116,7 @@ def getUserById():
     try:
         response = supabase.table('users').select('name', 'avatar_url').eq('id', userId).execute()
         return jsonify({
-                'name': response.data['name'], 'avatarUrl': response.data['avatar_url']
+                'name': response.data[0]['name'], 'avatarUrl': response.data[0]['avatar_url']
             }), 200
     except Exception as ex:
         return jsonify({'message': 'getting user failed','errors': ex.args}), 400
