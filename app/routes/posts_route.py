@@ -11,10 +11,14 @@ def addPost():
 
     userId = data.get('userId')
     content = data.get('content')
+    universityTag = data.get('universityTag')
+    specialtyTag = data.get('specialtyTag')
+    yearTag = data.get('yearTag')
+    tags = data.get('tags')
     image = request.files.get('image')
 
     try:
-        post_data = {'user_id': userId, 'content': content}
+        post_data = {'user_id': userId, 'content': content, 'university_tag': universityTag, 'specialty_tag': specialtyTag, "year_tag": yearTag, "tags": tags}
         res = supabase.table('posts').insert(post_data).execute()
 
         postId = res.data[0]['id']
@@ -34,6 +38,17 @@ def addPost():
     except Exception as ex:
         return jsonify({'message': 'adding post failed', 'errors': [str(ex)]}), 400
 
+@post_bp.route('/get', methods=['POST'])
+def getPosts():
+    supabase = connect_to_supabase()
+
+    try:
+        res = supabase.table('posts').select("*").execute()
+
+        return res.data
+    except Exception as ex:
+        return jsonify({'message': 'getting posts failed', 'errors': [str(ex)]}), 400   
+
 
 @post_bp.route('/vote', methods=['POST'])
 def votePost():
@@ -51,7 +66,7 @@ def votePost():
         else:
             res = supabase.table('posts').select('down_votes').eq('id', PostId).execute()
             supabase.table('posts').update({'down_votes': res.data[0]['down_votes'] + 1}).eq('id', PostId).execute()
-            
+
         return jsonify({}), 200
     
     except Exception as ex:
