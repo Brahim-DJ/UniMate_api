@@ -43,7 +43,7 @@ def getPosts():
     supabase = connect_to_supabase()
 
     try:
-        res = supabase.table('posts').select("*").execute()
+        res = supabase.table('posts').select("*, users(*)").execute()
 
         return res.data
     except Exception as ex:
