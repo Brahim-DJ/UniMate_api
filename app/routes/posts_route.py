@@ -43,7 +43,7 @@ def getPosts():
     supabase = connect_to_supabase()
 
     try:
-        res = supabase.table('posts').select("*, users(*)").execute()
+        res = supabase.table('posts').select("*, users(*), postVotes(vote_type)").execute()
 
         return res.data
     except Exception as ex:
@@ -56,18 +56,53 @@ def votePost():
 
     data = request.form
 
+    UserId = data.get('userId')
     PostId = data.get('postId')
     up = data.get('up') == '1'
+    redo = data.get('redo') == '1'
 
     try:
         if up:
             res = supabase.table('posts').select('up_votes').eq('id', PostId).execute()
-            supabase.table('posts').update({'up_votes': res.data[0]['up_votes'] + 1}).eq('id', PostId).execute()
+            current_up_votes = res.data[0]['up_votes']
+            if redo:
+                supabase.table('posts').update({'up_votes': current_up_votes - 1}).eq('id', PostId).execute()
+                supabase.table('postVotes').delete().eq('user_id', UserId).eq('post_id', PostId).execute()
+            else:
+                supabase.table('posts').update({'up_votes': current_up_votes + 1}).eq('id', PostId).execute()
+                voteData = {'user_id': UserId, 'post_id': PostId, 'vote_type': True}
+                supabase.table('postVotes').insert(voteData).execute()
         else:
             res = supabase.table('posts').select('down_votes').eq('id', PostId).execute()
-            supabase.table('posts').update({'down_votes': res.data[0]['down_votes'] + 1}).eq('id', PostId).execute()
+            current_down_votes = res.data[0]['down_votes']
+            if redo:
+                supabase.table('posts').update({'down_votes': current_down_votes - 1}).eq('id', PostId).execute()
+                supabase.table('postVotes').delete().eq('user_id', UserId).eq('post_id', PostId).execute()
+            else:
+                supabase.table('posts').update({'down_votes': current_down_votes + 1}).eq('id', PostId).execute()
+                voteData = {'user_id': UserId, 'post_id': PostId, 'vote_type': False}
+                supabase.table('postVotes').insert(voteData).execute()
 
         return jsonify({}), 200
     
     except Exception as ex:
-        return jsonify({'message': 'adding post failed', 'errors': [str(ex)]}), 400
+        return jsonify({'message': 'voting failed', 'errors': [str(ex)]}), 400
+    
+@post_bp.route('/getVote', methods=['POST'])
+def getVote():
+    supabase = connect_to_supabase()
+
+    data = request.form
+
+    UserId = data.get('userId')
+    PostId = data.get('postId')
+
+    try:
+        res = supabase.table('postVotes').select('vote_type').eq('user_id', UserId).eq('post_id', PostId).execute()
+
+        if len(res.data) > 0:
+            return res.data
+        else: return jsonify({'message': 'noData'}), 200
+
+    except Exception as ex:
+        return jsonify({'message': 'getting vote failed', 'errors': [str(ex)]}), 400  
