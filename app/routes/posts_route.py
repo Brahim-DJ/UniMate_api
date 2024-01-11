@@ -60,7 +60,7 @@ def votePost():
     PostId = data.get('postId')
     up = data.get('up') == '1'
     redo = data.get('redo') == '1'
-
+    
     try:
         if up:
             res = supabase.table('posts').select('up_votes').eq('id', PostId).execute()
