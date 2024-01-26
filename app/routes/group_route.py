@@ -1,10 +1,6 @@
 from flask import Blueprint, jsonify, request
 from app.utils.database import connect_to_supabase
-from werkzeug.utils import secure_filename
-import os
 import uuid
-from app.utils.database import supabase_url
-
 # Create a blueprint for home routes
 group_bp = Blueprint('group', __name__)
 

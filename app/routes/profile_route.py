@@ -1,6 +1,5 @@
 from flask import Blueprint, jsonify, request
 from app.utils.database import connect_to_supabase
-import os
 import uuid
 
 # Create a blueprint for home routes
