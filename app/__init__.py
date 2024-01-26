@@ -18,11 +18,15 @@ def create_app():
     from app.routes.auth_route import auth_bp
     from app.routes.posts_route import post_bp
     from app.routes.comment_route import comment_bp
+    from app.routes.group_route import group_bp
+    from app.routes.profile_route import profile_bp
 
     app.register_blueprint(home_route.bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(post_bp, url_prefix='/post')
     app.register_blueprint(comment_bp, url_prefix='/comment')
+    app.register_blueprint(group_bp, url_prefix='/group')
+    app.register_blueprint(profile_bp, url_prefix='/profile')
     # Add more blueprints as needed for other tables/routes
 
     return app
