@@ -265,3 +265,27 @@ def getposts():
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({'error': str(e)}), 500
+@group_bp.route('/join', methods=['POST'])
+def joingroup():
+    try:
+        supabase = connect_to_supabase()
+        data = request.form
+        group_id = data.get("id")
+       
+        
+        # Fetch the current member count
+        result = supabase.table('Groups').select('members').eq('id', group_id).execute()
+        print(result)
+        current_members = result.data[0]['members'] if result.data else 0
+
+        # Update the member count by incrementing it by 1
+        updated_members = current_members + 1
+        result = supabase.table('Groups').update({'members': updated_members}).eq('id', group_id).execute()
+
+        
+
+        return jsonify({'success': True}), 200
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({'error': str(e)}), 500
