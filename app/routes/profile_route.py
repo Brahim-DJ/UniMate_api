@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from app.utils.database import connect_to_supabase
+import os
 import uuid
 
 # Create a blueprint for home routes
@@ -15,7 +16,7 @@ def edit_profile():
         name = data.get('name')
         userid = data.get('userid')
         avatar = request.files.get('avatar')
-        print("ani hnaaaaaa")
+        
         print(avatar)
         # Check if the user exists
         existing_user = supabase.from_('users').select('*').eq('id', userid).execute()
