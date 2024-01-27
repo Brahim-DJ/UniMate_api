@@ -16,11 +16,12 @@ def addPost():
     yearTag = data.get('yearTag')
     tags = data.get('tags')
     image = request.files.get('image')
-
+    groupid=data.get('groupid')
     try:
-        post_data = {'user_id': userId, 'content': content, 'university_tag': universityTag, 'specialty_tag': specialtyTag, "year_tag": yearTag, "tags": tags}
+        post_data = {'user_id': userId, 'content': content, 'university_tag': universityTag, 'specialty_tag': specialtyTag, "year_tag": yearTag, "tags": tags,
+                     **({'group_id': groupid} if groupid is not None else {}),}
         res = supabase.table('posts').insert(post_data).execute()
-
+        
         postId = res.data[0]['id']
         if image:
             supabase.storage.from_("posts").upload(
@@ -32,7 +33,8 @@ def addPost():
             ret = supabase.table('posts').update({'image_url': url}).eq('id', postId).execute()
 
         return jsonify({
-                'message': 'post added successfully'
+                'message': 'post added successfully',
+                
             }), 200
     
     except Exception as ex:
@@ -41,7 +43,6 @@ def addPost():
 @post_bp.route('/get', methods=['POST'])
 def getPosts():
     supabase = connect_to_supabase()
-
     try:
         res = supabase.table('posts').select("*, users(*), postVotes(vote_type)").execute()
 
