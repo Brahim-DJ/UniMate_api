@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify, request
 from app.utils.database import connect_to_supabase
 import uuid
-
 # Create a blueprint for home routes
 group_bp = Blueprint('group', __name__)
 
@@ -22,6 +21,7 @@ def addgroup():
         
         # Handling file upload
         avatar = request.files.get('avatar')
+      
         # Check if the file is present in the request
         if avatar:
             # Generate a unique filename for the avatar
@@ -29,7 +29,7 @@ def addgroup():
             unique_filename = str(uuid.uuid4())
             avatar_filename = f'avatars-profile/{adminid}/avatar/{unique_filename}.jpg'
             
-            # Upload the new avatar image to Supabase storage
+              # Upload the new avatar image to Supabase storage
             supabase.storage.from_("groups_avatars").upload(
                         file=avatar.read(),
                         path=avatar_filename,
@@ -52,7 +52,9 @@ def addgroup():
             'members':1
                 # Add the avatar URL to the table
         }
+      
         # Insert the new group into the Groups table
+      
         result = groups_table.insert([new_group]).execute()
         group_id = result.data[0]['id']
         
@@ -63,9 +65,9 @@ def addgroup():
             }), 200
 
     except Exception as e:
-        print(f"Error: {e}")
-    
-    return jsonify({'error': str(e)}), 500
+     print(f"Error: {e}")
+   
+     return jsonify({'error': str(e)}), 500
     
 
 @group_bp.route('/getgroups', methods=['POST'])
@@ -76,9 +78,11 @@ def getgroups():
 
         group_ids_string = data.get("ids")
         if group_ids_string is not None:
-            group_ids = group_ids_string.split(",")
+          group_ids = group_ids_string.split(",")
+    # Rest of your code with the group_ids list
         else:
-            group_ids = []
+    # Handle the case when "ids" is not present in data or is None
+          group_ids = []
 
         
         
@@ -86,7 +90,8 @@ def getgroups():
 
         groups_data = result.data
         
-        # Structure the data as a dictionary of dictionaries
+       # Structure the data as a dictionary of dictionaries
+ 
         structured_data = {
             group['id']: {
                 key: str(value) if key != 'coverpic_url' else str(value) if value is not None else ''
@@ -99,7 +104,6 @@ def getgroups():
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({'error': str(e)}), 500
-    
 @group_bp.route('/addcoverimage', methods=['POST'])
 def addcoverimage():
     # Connect to Supabase
@@ -160,8 +164,6 @@ def editgroup():
         
         # Handling file upload
         avatar = request.files.get('avatar')
-        print("adoulaaaaaa")
-        print(avatar)
         # Check if the file is present in the request
         if avatar!=None:
             # Generate a unique filename for the avatar
@@ -195,8 +197,6 @@ def editgroup():
       
         supabase.from_('Groups').update(updated_group).eq('id', groupid).execute()
         
-        
-        
         return jsonify({
                 'message':"edited succefully"
                 
@@ -224,10 +224,13 @@ def getsuggestedgroups():
 
         
         
-        result = supabase.table('Groups').select('*').not_in('id', group_ids).execute()
+        result = supabase.table('Groups').select('*').execute()
+       
 
         groups_data = result.data
-        
+        print(groups_data)
+        non_matching_groups = [group for group in groups_data  if group['id'] not in group_ids]
+       
        # Structure the data as a dictionary of dictionaries
  
         structured_data = {
@@ -235,10 +238,30 @@ def getsuggestedgroups():
                 key: str(value) if key != 'coverpic_url' else str(value) if value is not None else ''
                 for key, value in group.items()
             }
-            for group in groups_data
+            for group in non_matching_groups
         }
+        print(structured_data)
         return jsonify(structured_data), 200
 
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@group_bp.route('/posts', methods=['POST'])
+def getposts():
+    try:
+        supabase = connect_to_supabase()
+        data = request.form
+        groupid = data.get("id")
+        
+        result = supabase.from_('posts').select("*, users(*), postVotes(vote_type)").eq('group_id', groupid).execute()
+        posts_data = result.data
+       
+
+        posts_data = result.data
+       
+        return jsonify(posts_data), 200
+       
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({'error': str(e)}), 500
